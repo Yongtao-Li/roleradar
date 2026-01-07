@@ -10,6 +10,7 @@ import streamlit as st
 
 from connectors.mathworks import scrape_mathworks
 from connectors.amazon import scrape_amazon
+from connectors.dassault import scrape_dassault
 from storage.db import (
     get_conn,
     init_db,
@@ -29,7 +30,7 @@ init_db(conn)
 st.set_page_config(page_title="RoleRadar", layout="wide")
 
 companies = [row[0] for row in conn.execute("SELECT DISTINCT company FROM jobs ORDER BY company").fetchall()]
-companies = companies or ["MathWorks", "Amazon"]  # fallback for first run
+companies = companies or ["MathWorks", "Amazon", "Dassault Systemes"]  # fallback for first run
 
 selected_company = st.selectbox("Company", ["(All)"] + companies)
 
@@ -49,12 +50,19 @@ with col1:
             record_run(conn, "MathWorks", total_jobs=len(mw_jobs), new_jobs=len(mw_new))
 
             # Amazon (JSON API)
-            amz_jobs = scrape_amazon(base_query="simulation")  # or "" for everything
+            amz_jobs = scrape_amazon()
             upsert_jobs(conn, amz_jobs)
             amz_new = get_new_today(conn, "Amazon")
             record_run(conn, "Amazon", total_jobs=len(amz_jobs), new_jobs=len(amz_new))
 
-        st.success(f"Updated. MathWorks new: {len(mw_new)} | Amazon new: {len(amz_new)}")
+            # Dassault Systemes (HTML)
+            ds_jobs = scrape_dassault()
+            upsert_jobs(conn, ds_jobs)
+            ds_new = get_new_today(conn, "Dassault Systemes")
+            record_run(conn, "Dassault Systemes", total_jobs=len(ds_jobs), new_jobs=len(ds_new))
+
+        st.success(f"Updated. MathWorks new: {len(mw_new)} | Amazon new: {len(amz_new)} | Dassault new: {len(ds_new)}")
+        # st.success(f"Updated. MathWorks new: {len(mw_new)} | Amazon new: {len(amz_new)}")
 
 with col2:
     st.subheader("Status")
