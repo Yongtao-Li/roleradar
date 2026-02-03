@@ -22,3 +22,12 @@ data/
 
 # Logs
 *.log
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.auto.tfvars
+tfplan
+*.tfplan
+terraform.exe
