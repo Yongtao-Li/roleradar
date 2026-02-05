@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sys
 import asyncio
 
@@ -28,6 +29,30 @@ from storage.db import (
 from utils.location import display_location
 
 st.set_page_config(page_title="RoleRadar", layout="wide")
+
+app_password = os.getenv("ROLERADAR_PASS", "")
+if not app_password:
+    st.error("Missing ROLERADAR_PASS. Set it in the environment to access the app.")
+    st.stop()
+
+if "authenticated" not in st.session_state:
+    st.session_state["authenticated"] = False
+
+if not st.session_state["authenticated"]:
+    st.title("RoleRadar")
+    st.subheader("Sign in")
+    password_input = st.text_input("Password", type="password")
+    if st.button("Sign in", type="primary"):
+        if password_input == app_password:
+            st.session_state["authenticated"] = True
+            st.rerun()
+        else:
+            st.error("Incorrect password.")
+    st.stop()
+
+if st.sidebar.button("Log out"):
+    st.session_state["authenticated"] = False
+    st.rerun()
 
 profile_name = st.sidebar.selectbox("Profile", ["yt", "bz"], index=0)
 cfg = load_profile(profile_name)

@@ -68,6 +68,12 @@ variable "ghcr_token" {
   sensitive   = true
 }
 
+variable "roleradar_password" {
+  type        = string
+  description = "Shared password for Streamlit login gate"
+  sensitive   = true
+}
+
 variable "allow_ssh_iap" {
   type        = bool
   description = "Allow SSH from IAP TCP forwarding"

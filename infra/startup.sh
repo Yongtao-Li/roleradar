@@ -49,7 +49,7 @@ Requires=docker.service
 [Service]
 Restart=always
 ExecStartPre=-/usr/bin/docker rm -f roleradar
-ExecStart=/usr/bin/docker run --name roleradar --restart=unless-stopped --network roleradar -p 127.0.0.1:8501:8501 -v $${MOUNT_DIR}:/app/data ${image}
+ExecStart=/usr/bin/docker run --name roleradar --restart=unless-stopped --network roleradar -p 127.0.0.1:8501:8501 -e ROLERADAR_PASS=${roleradar_password} -v $${MOUNT_DIR}:/app/data ${image}
 ExecStop=/usr/bin/docker stop roleradar
 
 [Install]

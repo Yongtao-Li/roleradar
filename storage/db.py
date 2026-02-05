@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
+from pathlib import Path
 from datetime import date, datetime
 from typing import Any, Iterable, Optional, Protocol
 
@@ -17,7 +18,10 @@ DB_PATH_DEFAULT = "jobs.sqlite3"
 
 
 def get_conn(db_path: str = DB_PATH_DEFAULT) -> sqlite3.Connection:
-    return sqlite3.connect(db_path, check_same_thread=False)
+    path = Path(db_path)
+    if path.parent != Path("."):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    return sqlite3.connect(str(path), check_same_thread=False)
 
 
 def init_db(conn: sqlite3.Connection) -> None:
