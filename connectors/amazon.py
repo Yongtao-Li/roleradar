@@ -85,10 +85,13 @@ def scrape_amazon(
     normalized_country_code: str = "USA",
     sort: str = "recent",
     result_limit: int = 50,
-    max_pages: int = 20,
+    max_pages: Optional[int] = None,
 ) -> List[Job]:
     """
     Pull jobs from Amazon's search.json and paginate using offset/result_limit.
+    By default this runs a full sync (no fixed page cap) and stops when
+    the API returns no jobs, when reported hits are exhausted, or when
+    pagination appears stuck (multiple pages add no new unique jobs).
     The endpoint returns `jobs` items containing `job_path` that can be joined with https://www.amazon.jobs.
     :contentReference[oaicite:1]{index=1}
     """
@@ -105,7 +108,13 @@ def scrape_amazon(
         "job_function_id",
     ]
 
-    for _ in range(max_pages):
+    pages_fetched = 0
+    consecutive_no_new = 0
+
+    while True:
+        if max_pages is not None and pages_fetched >= max_pages:
+            break
+
         params = {
             "base_query": base_query,
             "offset": offset,
@@ -123,6 +132,8 @@ def scrape_amazon(
         jobs = data.get("jobs", [])
         if not jobs:
             break
+
+        before_count = len(all_jobs)
 
         for j in jobs:
             title = (j.get("title") or "").strip()
@@ -146,8 +157,18 @@ def scrape_amazon(
                 location=location,
             )
 
-        # Pagination: increment offset by page size
-        offset += result_limit
+        pages_fetched += 1
+
+        if len(all_jobs) == before_count:
+            consecutive_no_new += 1
+        else:
+            consecutive_no_new = 0
+
+        if consecutive_no_new >= 3:
+            break
+
+        # Pagination: increment offset by jobs actually returned
+        offset += len(jobs)
 
         # Optional: stop early if we’ve already collected everything
         hits = data.get("hits")

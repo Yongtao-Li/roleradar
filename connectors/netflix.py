@@ -81,7 +81,7 @@ class NetflixConnector:
     def fetch_jobs(
         self,
         page_size: int = 100,
-        max_pages: Optional[int] = 800,  # safety cap; Netflix may return only 10/page -> needs more pages
+        max_pages: Optional[int] = None,
         keywords: Optional[Sequence[str]] = None,
         location_contains: Optional[Sequence[str]] = None,
     ) -> List[Job]:
@@ -90,7 +90,7 @@ class NetflixConnector:
 
         Args:
             page_size: value sent to API as `limit`. NOTE: API may cap actual returned jobs.
-            max_pages: safety cap for pagination.
+            max_pages: optional safety cap for pagination. `None` means full sync.
             keywords: optional list of keyword strings. If provided, jobs are filtered
                       client-side by title/description/location containing ANY keyword (case-insensitive).
             location_contains: optional list; keep jobs whose location contains ANY of these substrings.
@@ -316,7 +316,7 @@ class NetflixConnector:
 def scrape_netflix(
     *,
     page_size: int = 100,
-    max_pages: Optional[int] = 800,
+    max_pages: Optional[int] = None,
     keywords: Optional[Sequence[str]] = None,
     location_contains: Optional[Sequence[str]] = None,
 ) -> List[Job]:

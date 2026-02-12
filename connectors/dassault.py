@@ -4,7 +4,7 @@ import hashlib
 import re
 import time
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Set
+from typing import Dict, Iterable, List, Optional, Set
 from urllib.parse import urlparse
 
 import requests
@@ -82,7 +82,7 @@ def _iter_sitemap_locs(xml_text: str) -> Iterable[str]:
 
 def _collect_job_urls_from_sitemaps(
     session: requests.Session,
-    max_sitemaps: int = 50,
+    max_sitemaps: Optional[int] = None,
     sleep_s: float = 0.05,
 ) -> List[str]:
     """Follow sitemap index -> nested sitemaps; return unique job URLs."""
@@ -91,7 +91,7 @@ def _collect_job_urls_from_sitemaps(
     job_urls: List[str] = []
     seen_jobs: Set[str] = set()
 
-    while to_visit and len(visited) < max_sitemaps:
+    while to_visit and (max_sitemaps is None or len(visited) < max_sitemaps):
         sm_url = to_visit.pop(0)
         if sm_url in visited:
             continue
@@ -184,8 +184,8 @@ def _parse_job_detail(html: str, url: str) -> Optional[Job]:
 
 def scrape_dassault(
     *,
-    max_jobs: int = 300,
-    max_sitemaps: int = 50,
+    max_jobs: Optional[int] = None,
+    max_sitemaps: Optional[int] = None,
     sleep_s: float = 0.05,
 ) -> List[Job]:
     """Scrape Dassault Systèmes jobs using sitemap discovery (works when listings are JS-rendered)."""
@@ -194,7 +194,8 @@ def scrape_dassault(
         job_urls = _collect_job_urls_from_sitemaps(session, max_sitemaps=max_sitemaps, sleep_s=sleep_s)
 
         jobs: Dict[str, Job] = {}
-        for url in job_urls[:max_jobs]:
+        urls_to_fetch = job_urls if max_jobs is None else job_urls[:max_jobs]
+        for url in urls_to_fetch:
             try:
                 html = _get(url, session)
             except Exception:
