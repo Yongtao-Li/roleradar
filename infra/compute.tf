@@ -43,6 +43,7 @@ resource "google_compute_instance" "app" {
     image            = var.ghcr_image
     ghcr_username    = var.ghcr_username
     ghcr_token       = var.ghcr_token
+    roleradar_password = var.roleradar_password
     data_disk_name   = google_compute_disk.data.name
   })
 }

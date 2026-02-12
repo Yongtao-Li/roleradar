@@ -69,6 +69,7 @@ zone             = "us-east1-b"
 fqdn             = "roleradar.duckdns.org"
 duckdns_subdomain = "roleradar"
 duckdns_token    = "REPLACE_ME"
+roleradar_password = "REPLACE_ME"
 
 # Optional (only for private GHCR images)
 # ghcr_username = "bunnybryna"
@@ -95,6 +96,10 @@ docker ps
 ```
 
 You should see three containers: `roleradar`, `caddy`, and `duckdns`.
+
+### Authentication
+The app uses a simple Streamlit login gate. Set a shared password via the
+`roleradar_password` variable and re-apply to update the VM.
 
 ### Data persistence
 SQLite files are stored on a persistent disk mounted to `/mnt/disks/roleradar-data` on the VM and mounted into the container at `/app/data`.
